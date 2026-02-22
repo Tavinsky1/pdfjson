@@ -59,7 +59,7 @@ pip install -r requirements.txt
 
 # Configure
 cp .env.example .env
-# Set GITHUB_TOKEN (for LLM extraction) — see .env.example for where to get it
+# Set GROQ_API_KEY (for LLM extraction) — see .env.example for where to get it
 
 # Run
 uvicorn app.main:app --reload
@@ -530,7 +530,7 @@ All errors return:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `GITHUB_TOKEN` | ✅ | — | GitHub PAT for LLM inference. Generate at: GitHub → Settings → Developer settings → Fine-grained tokens (no permissions needed) |
+| `GROQ_API_KEY` | ✅ | — | Groq API key for LLM inference. Get one free at [console.groq.com/keys](https://console.groq.com/keys) — no credit card required |
 | `SECRET_KEY` | ✅ | `dev-secret-...` | Long random secret. Generate: `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `DATABASE_URL` | No | SQLite | Defaults to `sqlite+aiosqlite:///./pdfapi.db`. Set a PostgreSQL URL on Railway — `postgres://` scheme auto-converted |
 | `APP_URL` | No | `http://localhost:8000` | Base URL, e.g. `https://pdfjson.inksky.net` |
@@ -554,7 +554,7 @@ The repo includes a `Dockerfile` and `railway.json` for one-click deployment.
 4. Click your service → **Variables** and add:
 
 ```
-GITHUB_TOKEN=gho_...
+GROQ_API_KEY=gsk_...
 SECRET_KEY=<output of: python -c "import secrets; print(secrets.token_hex(32))">
 APP_URL=https://pdfjson.inksky.net
 CORS_ORIGINS=https://pdfjson.inksky.net

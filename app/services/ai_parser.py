@@ -23,8 +23,8 @@ log = logging.getLogger(__name__)
 async def parse(doc: ExtractedDocument) -> tuple[str, dict[str, Any]]:
     """
     Returns (document_type, result_dict).
-    Uses LLM-powered extraction when GITHUB_TOKEN is configured.
-    Falls back to rule-based regex if token is missing or call fails.
+    Uses LLM-powered extraction when GROQ_API_KEY is configured.
+    Falls back to rule-based regex if key is missing or call fails.
     """
     from app.core.config import settings
     if settings.ai_enabled:
@@ -443,10 +443,10 @@ async def _parse_with_ai(doc: ExtractedDocument) -> tuple[str, dict[str, Any]]:
     from app.core.config import settings
 
     client = AsyncOpenAI(
-        base_url="https://models.inference.ai.azure.com",
-        api_key=settings.github_token,
+        base_url="https://api.groq.com/openai/v1",
+        api_key=settings.groq_api_key,
     )
-    model = "gpt-4o-mini"
+    model = "llama-3.3-70b-versatile"
 
     text_snippet = doc.text[:6000]
     table_summary = ""

@@ -5,8 +5,8 @@ from pydantic import field_validator
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # GitHub token for LLM inference
-    github_token: str = ""
+    # Groq API key for LLM inference (https://console.groq.com/keys)
+    groq_api_key: str = ""
 
     # DB — Railway supplies DATABASE_URL as postgresql://...; we fix the scheme automatically
     database_url: str = "sqlite+aiosqlite:///./pdfapi.db"
@@ -44,8 +44,8 @@ class Settings(BaseSettings):
 
     @property
     def ai_enabled(self) -> bool:
-        """True when GitHub token is set — enables LLM-powered extraction."""
-        return bool(self.github_token)
+        """True when Groq API key is set — enables LLM-powered extraction."""
+        return bool(self.groq_api_key)
 
     @property
     def tier_limits(self) -> dict[str, int]:
