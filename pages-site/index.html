@@ -1,58 +1,4 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import type { Env } from "./lib/types";
-
-import keysRoutes from "./routes/keys";
-import parseRoutes from "./routes/parse";
-import billingRoutes from "./routes/billing";
-import adminRoutes from "./routes/admin";
-
-const app = new Hono<{ Bindings: Env }>();
-
-/* ── CORS ──────────────────────────────────────────────── */
-app.use(
-  "*",
-  cors({
-    origin: "*",
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-  }),
-);
-
-/* ── Security headers ──────────────────────────────────── */
-app.use("*", async (c, next) => {
-  await next();
-  c.header("X-Content-Type-Options", "nosniff");
-  c.header("X-Frame-Options", "DENY");
-  c.header("X-XSS-Protection", "1; mode=block");
-  c.header(
-    "Strict-Transport-Security",
-    "max-age=63072000; includeSubDomains; preload",
-  );
-});
-
-/* ── Health check ──────────────────────────────────────── */
-app.get("/health", (c) =>
-  c.json({ status: "ok", service: c.env.APP_NAME || "PDF→JSON API" }),
-);
-
-/* ── Mount routes ──────────────────────────────────────── */
-app.route("/", keysRoutes);
-app.route("/", parseRoutes);
-app.route("/", billingRoutes);
-app.route("/", adminRoutes);
-
-/* ── Landing page ──────────────────────────────────────── */
-app.get("/", (c) => {
-  return c.html(LANDING_HTML);
-});
-
-export default app;
-
-// ─────────────────────────────────────────────────────────
-// Landing page (embedded)
-// ─────────────────────────────────────────────────────────
-const LANDING_HTML = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -279,11 +225,11 @@ const LANDING_HTML = `<!DOCTYPE html>
     <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
       <div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:8px">1 &middot; Get a free API key</p>
-        <div class="code-block">curl -X POST <span class="u">/keys</span> \\<br/>&nbsp;&nbsp;-H <span class="s">"Content-Type: application/json"</span> \\<br/>&nbsp;&nbsp;-d <span class="s">'{"email":"you@example.com"}'</span></div>
+        <div class="code-block">curl -X POST <span class="u">https://pdfjson-api.inksky.workers.dev/keys</span> \<br/>&nbsp;&nbsp;-H <span class="s">"Content-Type: application/json"</span> \<br/>&nbsp;&nbsp;-d <span class="s">'{"email":"you@example.com"}'</span></div>
       </div>
       <div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:8px">2 &middot; Parse any PDF</p>
-        <div class="code-block">curl -X POST <span class="u">/parse</span> \\<br/>&nbsp;&nbsp;-H <span class="s">"Authorization: Bearer pdfa_your_key"</span> \\<br/>&nbsp;&nbsp;-F <span class="s">"file=@invoice.pdf"</span></div>
+        <div class="code-block">curl -X POST <span class="u">https://pdfjson-api.inksky.workers.dev/parse</span> \<br/>&nbsp;&nbsp;-H <span class="s">"Authorization: Bearer pdfa_your_key"</span> \<br/>&nbsp;&nbsp;-F <span class="s">"file=@invoice.pdf"</span></div>
       </div>
       <div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Response</p>
@@ -302,6 +248,7 @@ const LANDING_HTML = `<!DOCTYPE html>
 </footer>
 
 <script>
+  var API_BASE = 'https://pdfjson-api.inksky.workers.dev';
   var chosenFile = null;
   var zone  = document.getElementById('drop-zone');
   var input = document.getElementById('file-input');
@@ -315,10 +262,10 @@ const LANDING_HTML = `<!DOCTYPE html>
   });
   function setFile(f) {
     chosenFile = f;
-    document.getElementById('chosen-name').textContent = '\\uD83D\\uDCCE ' + f.name;
+    document.getElementById('chosen-name').textContent = '\uD83D\uDCCE ' + f.name;
     var btn = document.getElementById('parse-btn');
     btn.disabled = false;
-    btn.textContent = 'Parse "' + f.name + '" \\u2192';
+    btn.textContent = 'Parse "' + f.name + '" \u2192';
     document.getElementById('result-wrap').style.display = 'none';
   }
   async function runDemo() {
@@ -326,27 +273,27 @@ const LANDING_HTML = `<!DOCTYPE html>
     var btn=document.getElementById('parse-btn'),spinner=document.getElementById('spinner'),
         wrap=document.getElementById('result-wrap'),pre=document.getElementById('result-pre'),
         tag=document.getElementById('doc-tag');
-    btn.disabled=true; btn.textContent='Parsing\\u2026'; spinner.style.display='block'; wrap.style.display='none';
+    btn.disabled=true; btn.textContent='Parsing\u2026'; spinner.style.display='block'; wrap.style.display='none';
     var form=new FormData(); form.append('file',chosenFile);
     try {
-      var res=await fetch('/demo',{method:'POST',body:form});
+      var res=await fetch(API_BASE+'/demo',{method:'POST',body:form});
       var data=await res.json();
       spinner.style.display='none'; wrap.style.display='block';
       if(!res.ok){pre.className='err';pre.textContent=data.detail||JSON.stringify(data,null,2);tag.textContent='Error';tag.className='tag err';}
       else{pre.className='';pre.textContent=JSON.stringify(data.result,null,2);tag.textContent=data.document_type;tag.className='tag';
         var rem=data.demo_remaining_today;
-        document.getElementById('demo-note').innerHTML=rem+' free '+(rem===1?'try':'tries')+' left today \\u00B7 <a href="#pricing">Upgrade for more</a>';}
+        document.getElementById('demo-note').innerHTML=rem+' free '+(rem===1?'try':'tries')+' left today \u00B7 <a href="#pricing">Upgrade for more</a>';}
     }catch(e){spinner.style.display='none';wrap.style.display='block';pre.className='err';pre.textContent='Network error: '+e.message;tag.textContent='Error';tag.className='tag err';}
-    btn.disabled=false;btn.textContent='Parse "'+chosenFile.name+'" \\u2192';
+    btn.disabled=false;btn.textContent='Parse "'+chosenFile.name+'" \u2192';
   }
   async function loadPlans(){
     try{
-      var resp=await fetch('/billing/plans');var data=await resp.json();
+      var resp=await fetch(API_BASE+'/billing/plans');var data=await resp.json();
       var feats={free:['50 parses/month','Invoice & receipt extraction','JSON output'],starter:['500 parses/month','AI-powered extraction','Email support'],pro:['3,000 parses/month','AI-powered extraction','Priority support'],scale:['20,000 parses/month','AI-powered extraction','SLA + priority']};
       document.getElementById('plans-grid').innerHTML=data.plans.map(function(p){
-        var fs=(feats[p.tier]||[]).map(function(f){return '<li><span class="check">\\u2713</span> '+f+'</li>';}).join('');
-        var cta=p.price==='$0'?'<button class="btn btn-outline" onclick="window.scrollTo({top:0,behavior:\\'smooth\\'})">Try free demo</button>':'<a href="#for-devs" class="btn btn-primary">Get started &rarr;</a>';
-        return '<div class="plan '+(p.tier==='starter'?'pop':'')+'\">'+(p.tier==='starter'?'<div class="pop-tag">Most popular</div>':'')+
+        var fs=(feats[p.tier]||[]).map(function(f){return '<li><span class="check">\u2713</span> '+f+'</li>';}).join('');
+        var cta=p.price==='$0'?'<button class="btn btn-outline" onclick="window.scrollTo({top:0,behavior:\'smooth\'})">Try free demo</button>':'<a href="#for-devs" class="btn btn-primary">Get started &rarr;</a>';
+        return '<div class="plan '+(p.tier==='starter'?'pop':'')+'">'+(p.tier==='starter'?'<div class="pop-tag">Most popular</div>':'')+
           '<div class="plan-name">'+p.name+'</div><div class="plan-price">'+p.price+'<span>/mo</span></div>'+
           '<div class="plan-limit">'+p.monthly_limit.toLocaleString()+' parses/month</div><ul>'+fs+'</ul>'+cta+'</div>';
       }).join('');
@@ -355,4 +302,4 @@ const LANDING_HTML = `<!DOCTYPE html>
   loadPlans();
 </script>
 </body>
-</html>`;
+</html>
