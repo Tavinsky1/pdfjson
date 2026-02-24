@@ -1,0 +1,23 @@
+name = "pdfjson-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+APP_NAME = "PDF→JSON API"
+APP_URL = "https://pdfjson.inksky.net"
+API_KEY_PREFIX = "pdfa_"
+MAX_UPLOAD_MB = "20"
+FREE_MONTHLY_LIMIT = "50"
+STARTER_MONTHLY_LIMIT = "500"
+PRO_MONTHLY_LIMIT = "3000"
+SCALE_MONTHLY_LIMIT = "20000"
+LLM_PROVIDER = "groq"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
+# Secrets (set via `wrangler secret put`):
+# DATABASE_URL
+# GROQ_API_KEY
+# SECRET_KEY
+# STRIPE_SECRET_KEY
+# STRIPE_WEBHOOK_SECRET
