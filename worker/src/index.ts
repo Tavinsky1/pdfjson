@@ -5,6 +5,7 @@ import type { Env } from "./lib/types";
 import keysRoutes from "./routes/keys";
 import parseRoutes from "./routes/parse";
 import billingRoutes from "./routes/billing";
+import adminRoutes from "./routes/admin";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -39,6 +40,7 @@ app.get("/health", (c) =>
 app.route("/", keysRoutes);
 app.route("/", parseRoutes);
 app.route("/", billingRoutes);
+app.route("/", adminRoutes);
 
 /* ── Landing page ──────────────────────────────────────── */
 app.get("/", (c) => {
